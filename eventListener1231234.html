@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<style type="text/css">
+
+.pizza{
+	width: 100px;
+	height: 100px;
+	background-image: url(https://cdn.prod.website-files.com/650b672b6d49343e2368aa57/6553880705836414d8c74f52_616f13c877f31341ccc486bc_05.PIZZA_BOY.gif);
+	background-size: contain;
+	background-repeat: no-repeat;
+	/*display: inline-block;*/
+}
+
+</style>
+
+</head>
+<body>
+
+<p>Click on the screen and a depressed pizza walking will appear.</p>
+
+<script type="text/javascript">
+	document.addEventListener("click", function(){
+	let pizza = document.createElement("div")
+	pizza.classList.add("pizza")
+	document.body.appendChild(pizza)
+})
+</script>
+</body>
+</html>

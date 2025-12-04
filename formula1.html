@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>F1 Clash Simulator (HTML Only)</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #111;
+        color: #fff;
+        text-align: center;
+    }
+    h1 {
+        color: #f00;
+    }
+    .track {
+        margin: 20px auto;
+        width: 600px;
+        height: 300px;
+        border: 3px solid #fff;
+        position: relative;
+        background: #222;
+    }
+    .car {
+        width: 30px;
+        height: 50px;
+        position: absolute;
+        top: 10px;
+    }
+    .player { background: blue; }
+    .ai { background: red; }
+    .controls button {
+        margin: 5px;
+        font-size: 16px;
+        padding: 10px;
+    }
+</style>
+</head>
+<body>
+
+<h1>F1 Clash Simulator</h1>
+
+<div class="track">
+    <div class="car player" style="left: 50px;"></div>
+    <div class="car ai" style="left: 100px;"></div>
+    <div class="car ai" style="left: 150px;"></div>
+</div>
+
+<h2>Choose Tyres</h2>
+<form method="get">
+    <select name="tyres">
+        <option value="soft">Soft</option>
+        <option value="medium">Medium</option>
+        <option value="hard">Hard</option>
+    </select>
+    <input type="submit" value="Set Tyres">
+</form>
+
+<h2>Pit Stop</h2>
+<form method="get">
+    <input type="hidden" name="pit" value="1">
+    <input type="submit" value="Enter Pit Stop">
+</form>
+
+<h2>Race Progress</h2>
+<p>
+    <?php
+    // Since we can only use HTML, simulate a race with GET parameters
+    $tyres = isset($_GET['tyres']) ? $_GET['tyres'] : 'soft';
+    $pit = isset($_GET['pit']) ? true : false;
+
+    echo "Your tyres: <b>$tyres</b><br>";
+    if ($pit) {
+        echo "<b>You entered the pit stop! Tyres changed and speed reset.</b><br>";
+    }
+
+    // Simulate AI lap times
+    $ai1 = rand(1,5);
+    $ai2 = rand(1,5);
+
+    // Player progress based on tyre choice
+    $playerProgress = rand(2,5);
+    if ($tyres == 'soft') $playerProgress += 1;
+    if ($pit) $playerProgress -= 1;
+
+    echo "Your lap progress: $playerProgress units<br>";
+    echo "AI1 lap progress: $ai1 units<br>";
+    echo "AI2 lap progress: $ai2 units<br>";
+
+    if ($playerProgress > $ai1 && $playerProgress > $ai2) {
+        echo "<h3 style='color:lime;'>You are leading!</h3>";
+    } elseif ($playerProgress < $ai1 && $playerProgress < $ai2) {
+        echo "<h3 style='color:red;'>You are behind!</h3>";
+    } else {
+        echo "<h3 style='color:yellow;'>You are in the middle!</h3>";
+    }
+    ?>
+</p>
+
+<p style="color:#888; font-size:12px;">*Refresh the page to simulate the next turn of the race*</p>
+
+</body>
+</html>

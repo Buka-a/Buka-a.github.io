@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+	<style>
+
+
+		#homer{
+			background-image: url(https://i0.wp.com/www.dogwonder.co.uk/wp-content/uploads/2009/12/tumblr_ku2pvuJkJG1qz9qooo1_r1_400.gif?resize=320%2C320);
+			width: 200px;
+			height: 200px;
+			position: absolute;
+			background-position: center;
+			background-size: contain;
+			background-repeat: no-repeat;
+
+
+		}
+
+
+	</style>
+
+</head>
+<body>
+
+<div id="homer"></div>
+
+
+
+<script type="text/javascript">
+
+	homer.style.left="0px"
+	document.addEventListener("keypress",function(){
+
+		homer.style.left = parseInt(homer.style.left)+10+"px"
+		console.log("hi im homer")
+
+	})
+</script>
+
+
+</body>
+</html>
