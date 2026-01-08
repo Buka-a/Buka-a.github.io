@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+<style type="text/css">
+
+	div{
+		width: 300px;
+		height: 300px;
+		background-size: contain;
+		background-repeat: no-repeat;
+		background-position: center;
+		opacity: 0;
+		display: inline-block;
+	}
+
+#christmastree{
+	background-image: url(https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRr9YYeOai4xHFHIntVDi50Onr8yfnJx_NtOg&s);
+}
+
+#snowflake{
+	background-image: url(https://www.weather.gov/images/nws/snowy-road.jpg);
+}
+
+#sleigh{
+	background-image: url(https://media.rainpos.com/4896/6180_SANTAS_SLEIGH.jpg);
+}
+
+#santa{
+	background-image: url(https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Merry_Old_Santa_Claus_by_Thomas_Nast.jpg/962px-Merry_Old_Santa_Claus_by_Thomas_Nast.jpg);
+}
+
+body{
+	background-image: url(https://plus.unsplash.com/premium_photo-1661539068210-d18ce1000f59?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8ZGVjZW1iZXJ8ZW58MHx8MHx8fDA%3D);
+	color: white;
+}
+
+
+
+</style>
+
+</head>
+<body>
+
+<center>Click because i said</center>
+<div id="christmastree"></div>
+<div id="snowflake"></div>
+<div id="sleigh"></div>
+<div id="santa"></div>
+
+<script type="text/javascript">
+
+	let clickcounter=0
+	document.addEventListener("click", function(){
+
+		clickcounter=clickcounter+1
+
+		console.log(clickcounter)
+
+		if(clickcounter==1){
+			christmastree.style.opacity="1"
+
+		}
+
+		if(clickcounter==2){
+			snowflake.style.opacity="1"
+
+		}
+
+		if(clickcounter==3){
+			sleigh.style.opacity="1"
+
+		}
+
+		if(clickcounter==4){
+			santa.style.opacity="1"
+
+		}
+
+		if(clickcounter==5){
+			santa.style.opacity="1"
+			clickcounter=0
+			christmastree.style.opaity=0
+			snoflake.style.opacity=0
+			sleigh.style.opacity=0
+			santa.style.opacity=0
+		}
+
+	})
+
+
+</script>
+
+
+</body>
+</html>
