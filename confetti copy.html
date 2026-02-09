@@ -35,8 +35,16 @@
 
 </head>
 <body>
-
+	<button id="btn">drop confetti</button>
 	<script type="text/javascript">
+
+		let colors = ["blue", "green", "purple", "pink"]
+		let my_students = ["zara", "sola", "kelly"]
+		let my_classes = ["math", "history", "english", "science"]
+		console.log(colors[1])
+		console.log(my_students[2])
+		console.log(my_classes[3])
+		let dropConfettiBtn = document.getElementById("btn")
 	
 		function makeConfetti(){
 			let square = document.createElement("div")
@@ -63,15 +71,23 @@
 			square.style.backgroundColor = "rgb("+r+","+g+","+b+")"
 
 			function fall() {
-				let fallFactor = 100
+				let fallFactor = 10
 				square.style.top = parseInt(square.style.top) + fallFactor + "px"
 				if (paresInt(square.style.top) > 1000)
-					square.style.top = Math.random() * 150 + "px"
+					square.style.top = "10px"
 			}
 			setInterval(fall, 100)
 		}
 
-		setInterval(makeConfetti, 200)
+		dropConfettiBtn.addEventListener("click", function(){
+			console.log("click")
+			makeConfetti()
+		})
+		// for (let i = 1; i < 100; i++) {
+		// 	makeConfetti()
+		// }
+		
+		// setInterval(makeConfetti, 200)
 	
 	</script>
 

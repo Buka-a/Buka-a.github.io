@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<!-- saved from url=(0046)file:///Users/c29ku/Desktop/train-inclass.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Document</title>
+</head>
+<body>
+	<button id="add-person">add person</button>
+	<input type="text" id="person">
+	<button id="remove-person">remove last person</button>
+<script>
+	let people = ["oli", "evren", "lukas"]
+	let addPersonBtn = document.getElementById("add-person")
+	let removePersonBtn = document.getElementById("remove-person")
+	people.push("lukas")
+	people.push("matthew")
+	people.pop()
+	people.pop()
+	console.log(people)
+	addPersonBtn.addEventListener("click", function(){
+		let personInput = document.getElementById("person")
+		people.push(personInput.value)
+		personInput.value = ""
+		console.log(people)
+	})
+	removePersonBtn.addEventListener("click", function(){
+		let personInput = document.getElementById("person")
+		people.pop(personInput.value)
+		personInput.value = ""
+		console.log(people)
+	})
+</script>
+
+</body></html>
