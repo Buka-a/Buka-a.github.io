@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alpine Skier - Downhill Racing</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 100%);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #gameContainer {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            background: linear-gradient(to bottom, #4A90E2 0%, #FFFFFF 100%);
+            border: 4px solid #2C3E50;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        #gameCanvas {
+            display: block;
+            background: linear-gradient(to bottom, #87CEEB 0%, #FFFFFF 80%);
+        }
+
+        #ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        #score, #speed, #distance, #combo {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        #combo {
+            color: #FFD700;
+            font-size: 24px;
+        }
+
+        #startScreen, #gameOverScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 100;
+        }
+
+        #startScreen h1, #gameOverScreen h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #FFD700;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+        }
+
+        #startScreen p, #gameOverScreen p {
+            font-size: 18px;
+            margin-bottom: 10px;
+            text-align: center;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        .controls {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+
+        .controls p {
+            margin: 5px 0;
+        }
+
+        button {
+            padding: 15px 40px;
+            font-size: 24px;
+            background: linear-gradient(to bottom, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transition: transform 0.1s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        #finalScore {
+            font-size: 36px;
+            color: #FFD700;
+            margin: 20px 0;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        #trickDisplay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+            pointer-events: none;
+            z-index: 50;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        #healthBar {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 30px;
+            background: rgba(0,0,0,0.5);
+            border: 2px solid white;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        #healthFill {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(to right, #4CAF50, #8BC34A);
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        
+        <div id="ui">
+            <div id="score">Score: 0</div>
+            <div id="speed">Speed: 0 km/h</div>
+            <div id="distance">Distance: 0m</div>
+            <div id="combo" class="hidden">Combo: x0</div>
+        </div>
+
+        <div id="trickDisplay"></div>
+
+        <div id="healthBar">
+            <div id="healthFill"></div>
+        </div>
+
+        <div id="startScreen">
+            <h1>⛷️ ALPINE SKIER ⛷️</h1>
+            <p>Race down the mountain, avoid obstacles, and perform tricks!</p>
+            <div class="controls">
+                <p><strong>← →</strong> - Move left/right</p>
+                <p><strong>↑</strong> - Speed boost</p>
+                <p><strong>SPACE</strong> - Jump and perform tricks</p>
+                <p><strong>Q/E</strong> - Tricks while in air</p>
+            </div>
+            <p>Avoid trees and rocks! Collect flags for points!</p>
+            <button id="startButton">START GAME</button>
+        </div>
+
+        <div id="gameOverScreen" class="hidden">
+            <h1>GAME OVER</h1>
+            <div id="finalScore">Score: 0</div>
+            <p>You skied <span id="finalDistance">0</span> meters down the mountain!</p>
+            <button id="restartButton">PLAY AGAIN</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Game state
+        const game = {
+            running: false,
+            score: 0,
+            speed: 0,
+            maxSpeed: 15,
+            baseSpeed: 5,
+            distance: 0,
+            health: 100,
+            combo: 0,
+            comboTimer: 0
+        };
+
+        // Player
+        const player = {
+            x: canvas.width / 2,
+            y: canvas.height - 150,
+            width: 20,
+            height: 40,
+            velocityX: 0,
+            velocityY: 0,
+            jumping: false,
+            jumpPower: 0,
+            rotation: 0,
+            color: '#E74C3C'
+        };
+
+        // Arrays for game objects
+        const obstacles = [];
+        const flags = [];
+        const particles = [];
+        const snowflakes = [];
+
+        // Trick system
+        const tricks = {
+            performed: [],
+            current: '',
+            points: {
+                'BACKFLIP': 100,
+                'FRONTFLIP': 100,
+                'SPIN 360': 150,
+                'SPIN 720': 250,
+                'SUPER TRICK': 500
+            }
+        };
+
+        // Initialize snowflakes
+        for (let i = 0; i < 50; i++) {
+            snowflakes.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius: Math.random() * 2 + 1,
+                speed: Math.random() * 2 + 1
+            });
+        }
+
+        // Input handling
+        const keys = {};
+        document.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+            
+            if (game.running && e.key === ' ' && !player.jumping) {
+                player.jumping = true;
+                player.velocityY = -15;
+                player.jumpPower = 0;
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        // Start game
+        document.getElementById('startButton').addEventListener('click', startGame);
+        document.getElementById('restartButton').addEventListener('click', startGame);
+
+        function startGame() {
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            
+            // Reset game state
+            game.running = true;
+            game.score = 0;
+            game.speed = game.baseSpeed;
+            game.distance = 0;
+            game.health = 100;
+            game.combo = 0;
+            game.comboTimer = 0;
+            
+            // Reset player
+            player.x = canvas.width / 2;
+            player.y = canvas.height - 150;
+            player.velocityX = 0;
+            player.velocityY = 0;
+            player.jumping = false;
+            player.rotation = 0;
+            
+            // Clear arrays
+            obstacles.length = 0;
+            flags.length = 0;
+            particles.length = 0;
+            tricks.performed = [];
+            
+            gameLoop();
+        }
+
+        function spawnObstacle() {
+            if (Math.random() < 0.02) {
+                const type = Math.random() < 0.5 ? 'tree' : 'rock';
+                obstacles.push({
+                    x: Math.random() * (canvas.width - 40) + 20,
+                    y: -50,
+                    width: type === 'tree' ? 30 : 40,
+                    height: type === 'tree' ? 50 : 30,
+                    type: type
+                });
+            }
+        }
+
+        function spawnFlag() {
+            if (Math.random() < 0.015) {
+                flags.push({
+                    x: Math.random() * (canvas.width - 30) + 15,
+                    y: -50,
+                    width: 20,
+                    height: 40,
+                    collected: false
+                });
+            }
+        }
+
+        function updatePlayer() {
+            // Horizontal movement
+            if (keys['ArrowLeft']) {
+                player.velocityX = -6;
+            } else if (keys['ArrowRight']) {
+                player.velocityX = 6;
+            } else {
+                player.velocityX *= 0.9;
+            }
+
+            // Speed boost
+            if (keys['ArrowUp']) {
+                game.speed = Math.min(game.speed + 0.1, game.maxSpeed);
+            } else {
+                game.speed = Math.max(game.speed - 0.05, game.baseSpeed);
+            }
+
+            player.x += player.velocityX;
+            player.x = Math.max(20, Math.min(canvas.width - 20, player.x));
+
+            // Jumping and tricks
+            if (player.jumping) {
+                player.velocityY += 0.6; // Gravity
+                player.y += player.velocityY;
+                
+                // Perform tricks in air
+                if (keys['q'] && tricks.current !== 'BACKFLIP') {
+                    tricks.current = 'BACKFLIP';
+                    player.rotation += 0.15;
+                } else if (keys['e'] && tricks.current !== 'FRONTFLIP') {
+                    tricks.current = 'FRONTFLIP';
+                    player.rotation -= 0.15;
+                } else if (keys['q'] && keys['e'] && tricks.current !== 'SUPER TRICK') {
+                    tricks.current = 'SUPER TRICK';
+                    player.rotation += 0.3;
+                }
+
+                // Track rotation for spin tricks
+                if (Math.abs(player.rotation) > Math.PI * 2 && tricks.current !== 'SPIN 720') {
+                    tricks.current = 'SPIN 720';
+                } else if (Math.abs(player.rotation) > Math.PI && tricks.current !== 'SPIN 360') {
+                    tricks.current = 'SPIN 360';
+                }
+
+                // Landing
+                if (player.y >= canvas.height - 150) {
+                    player.y = canvas.height - 150;
+                    player.jumping = false;
+                    player.velocityY = 0;
+                    
+                    // Award trick points
+                    if (tricks.current && tricks.points[tricks.current]) {
+                        const points = tricks.points[tricks.current];
+                        game.score += points * (game.combo + 1);
+                        game.combo++;
+                        game.comboTimer = 180; // 3 seconds at 60fps
+                        showTrick(tricks.current, points);
+                    }
+                    
+                    player.rotation = 0;
+                    tricks.current = '';
+                    
+                    // Landing particles
+                    for (let i = 0; i < 10; i++) {
+                        particles.push({
+                            x: player.x,
+                            y: player.y + player.height/2,
+                            vx: (Math.random() - 0.5) * 4,
+                            vy: Math.random() * -3,
+                            life: 30,
+                            color: '#FFFFFF'
+                        });
+                    }
+                }
+            }
+        }
+
+        function updateObstacles() {
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                obstacles[i].y += game.speed;
+                
+                // Collision detection
+                if (!player.jumping && 
+                    player.x < obstacles[i].x + obstacles[i].width &&
+                    player.x + player.width > obstacles[i].x &&
+                    player.y < obstacles[i].y + obstacles[i].height &&
+                    player.y + player.height > obstacles[i].y) {
+                    
+                    game.health -= 20;
+                    game.combo = 0;
+                    obstacles.splice(i, 1);
+                    
+                    // Crash particles
+                    for (let j = 0; j < 20; j++) {
+                        particles.push({
+                            x: player.x,
+                            y: player.y,
+                            vx: (Math.random() - 0.5) * 8,
+                            vy: (Math.random() - 0.5) * 8,
+                            life: 40,
+                            color: '#E74C3C'
+                        });
+                    }
+                    
+                    if (game.health <= 0) {
+                        endGame();
+                    }
+                } else if (obstacles[i].y > canvas.height) {
+                    obstacles.splice(i, 1);
+                }
+            }
+        }
+
+        function updateFlags() {
+            for (let i = flags.length - 1; i >= 0; i--) {
+                flags[i].y += game.speed;
+                
+                // Collection detection
+                if (!flags[i].collected &&
+                    player.x < flags[i].x + flags[i].width &&
+                    player.x + player.width > flags[i].x &&
+                    player.y < flags[i].y + flags[i].height &&
+                    player.y + player.height > flags[i].y) {
+                    
+                    flags[i].collected = true;
+                    game.score += 50 * (game.combo + 1);
+                    game.combo++;
+                    game.comboTimer = 180;
+                    
+                    // Collection particles
+                    for (let j = 0; j < 15; j++) {
+                        particles.push({
+                            x: flags[i].x + flags[i].width/2,
+                            y: flags[i].y + flags[i].height/2,
+                            vx: (Math.random() - 0.5) * 6,
+                            vy: (Math.random() - 0.5) * 6,
+                            life: 30,
+                            color: '#FFD700'
+                        });
+                    }
+                }
+                
+                if (flags[i].y > canvas.height) {
+                    flags.splice(i, 1);
+                }
+            }
+        }
+
+        function updateParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].x += particles[i].vx;
+                particles[i].y += particles[i].vy;
+                particles[i].vy += 0.2; // Gravity
+                particles[i].life--;
+                
+                if (particles[i].life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+        }
+
+        function updateSnowflakes() {
+            for (let flake of snowflakes) {
+                flake.y += flake.speed + game.speed / 3;
+                flake.x += Math.sin(flake.y / 30) * 0.5;
+                
+                if (flake.y > canvas.height) {
+                    flake.y = -10;
+                    flake.x = Math.random() * canvas.width;
+                }
+            }
+        }
+
+        function showTrick(trickName, points) {
+            const display = document.getElementById('trickDisplay');
+            display.textContent = `${trickName}! +${points * (game.combo)}`;
+            display.style.opacity = '1';
+            
+            setTimeout(() => {
+                display.style.opacity = '0';
+            }, 1500);
+        }
+
+        function drawPlayer() {
+            ctx.save();
+            ctx.translate(player.x, player.y);
+            ctx.rotate(player.rotation);
+            
+            // Skier body
+            ctx.fillStyle = player.color;
+            ctx.fillRect(-10, -20, 20, 40);
+            
+            // Head
+            ctx.fillStyle = '#FFD1A3';
+            ctx.beginPath();
+            ctx.arc(0, -30, 10, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Skis
+            ctx.fillStyle = '#34495E';
+            ctx.fillRect(-15, 15, 30, 5);
+            
+            ctx.restore();
+        }
+
+        function drawObstacles() {
+            for (let obs of obstacles) {
+                if (obs.type === 'tree') {
+                    // Tree trunk
+                    ctx.fillStyle = '#8B4513';
+                    ctx.fillRect(obs.x + 10, obs.y + 20, 10, 30);
+                    
+                    // Tree top
+                    ctx.fillStyle = '#228B22';
+                    ctx.beginPath();
+                    ctx.moveTo(obs.x + 15, obs.y);
+                    ctx.lineTo(obs.x, obs.y + 25);
+                    ctx.lineTo(obs.x + 30, obs.y + 25);
+                    ctx.closePath();
+                    ctx.fill();
+                } else {
+                    // Rock
+                    ctx.fillStyle = '#7F8C8D';
+                    ctx.beginPath();
+                    ctx.ellipse(obs.x + obs.width/2, obs.y + obs.height/2, 
+                               obs.width/2, obs.height/2, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        }
+
+        function drawFlags() {
+            for (let flag of flags) {
+                if (!flag.collected) {
+                    // Pole
+                    ctx.fillStyle = '#2C3E50';
+                    ctx.fillRect(flag.x + 8, flag.y, 4, 40);
+                    
+                    // Flag
+                    ctx.fillStyle = '#E74C3C';
+                    ctx.beginPath();
+                    ctx.moveTo(flag.x + 12, flag.y);
+                    ctx.lineTo(flag.x + 30, flag.y + 10);
+                    ctx.lineTo(flag.x + 12, flag.y + 20);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+            }
+        }
+
+        function drawParticles() {
+            for (let p of particles) {
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.life / 40;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        function drawSnowflakes() {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            for (let flake of snowflakes) {
+                ctx.beginPath();
+                ctx.arc(flake.x, flake.y, flake.radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('score').textContent = `Score: ${Math.floor(game.score)}`;
+            document.getElementById('speed').textContent = `Speed: ${Math.floor(game.speed * 10)} km/h`;
+            document.getElementById('distance').textContent = `Distance: ${Math.floor(game.distance)}m`;
+            
+            const comboEl = document.getElementById('combo');
+            if (game.combo > 0) {
+                comboEl.textContent = `Combo: x${game.combo}`;
+                comboEl.classList.remove('hidden');
+            } else {
+                comboEl.classList.add('hidden');
+            }
+            
+            // Update health bar
+            document.getElementById('healthFill').style.width = `${game.health}%`;
+            
+            if (game.health < 30) {
+                document.getElementById('healthFill').style.background = 
+                    'linear-gradient(to right, #E74C3C, #C0392B)';
+            } else if (game.health < 60) {
+                document.getElementById('healthFill').style.background = 
+                    'linear-gradient(to right, #F39C12, #E67E22)';
+            }
+        }
+
+        function endGame() {
+            game.running = false;
+            document.getElementById('finalScore').textContent = `Score: ${Math.floor(game.score)}`;
+            document.getElementById('finalDistance').textContent = Math.floor(game.distance);
+            document.getElementById('gameOverScreen').classList.remove('hidden');
+        }
+
+        function gameLoop() {
+            if (!game.running) return;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw background gradient
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#87CEEB');
+            gradient.addColorStop(0.5, '#E0F6FF');
+            gradient.addColorStop(1, '#FFFFFF');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Update game state
+            game.distance += game.speed / 10;
+            game.score += game.speed / 10;
+            
+            if (game.comboTimer > 0) {
+                game.comboTimer--;
+            } else {
+                game.combo = 0;
+            }
+            
+            // Spawn objects
+            spawnObstacle();
+            spawnFlag();
+            
+            // Update
+            updatePlayer();
+            updateObstacles();
+            updateFlags();
+            updateParticles();
+            updateSnowflakes();
+            
+            // Draw
+            drawSnowflakes();
+            drawFlags();
+            drawObstacles();
+            drawParticles();
+            drawPlayer();
+            
+            updateUI();
+            
+            requestAnimationFrame(gameLoop);
+        }
+    </script>
+</body>
+</html>

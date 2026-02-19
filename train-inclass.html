@@ -58,16 +58,43 @@
 	</div>
 
 <script>
-	let people = ["oli", "evren", "lukas"]
+let kobi = {
+	name: "kobi",
+	sutdentId: "c29kg",
+	pronouns: "zi/zer",
+}
+
+let jamie = {
+	name: "jamie",
+	sutdentId: "c29jw",
+	pronouns: "ey/em/eir",
+	zip_code: "10003",
+
+}
+
+let dalton = {
+	year : 1919,
+	studentNum: 500,
+}
+
+let people = [{name: "jamie", fav_color: "skyblue"}, {name: "kobi", fav_color: "pink"}]
+
+	// let people = ["oli", "evren", "lukas"]
+
+	console.log(people)
+	console.log(jamie.pronouns)
+
 	let train = document.getElementById("train")
 	
 
 	function makeTrain(){
 		train.innerHTML=""
 		for(let i = 0; i < people.length; i++){
+
 			console.log(people[i])
 		let cart = document.createElement("div")
-		cart.textContent = people[i]
+		cart.textContent = people[i].name
+		cart.style.backgroundColor = people[i].fav_color
 		cart.classList.add("cart")
 		train.appendChild(cart)
 	}
